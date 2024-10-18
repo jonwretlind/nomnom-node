@@ -1,0 +1,24 @@
+{
+  "name": "nomnom-node",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Jon C. Wretlind",
+  "license": "GPL-3.0",
+  "description": "A pacman-style game featuring a hungry baby hippo!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonwretlind/nomnom-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jonwretlind/nomnom-node/issues"
+  },
+  "homepage": "https://github.com/jonwretlind/nomnom-node#readme",
+  "dependencies": {
+    "express": "^4.21.1",
+    "phaser": "^3.86.0"
+  }
+}
