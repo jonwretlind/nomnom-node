@@ -2,27 +2,35 @@
 nomnom-node/
 │
 ├── public/
-│   ├── index.html
+│   ├── assets/
+│   │   ├── fonts/
+│   │   │   └── LuckiestGuy-Regular.ttf
+│   │   ├── opening-background.png
+│   │   ├── button.png
+│   │   └── favicon.png
+│   │
 │   ├── css/
 │   │   └── styles.css
+│   │
 │   ├── json/
 │   │   └── levels.json
-│   ├── img/
-│   │   ├── bricks.png
-│   │   ├── alephdot.png
-│   │   ├── power-pill.png
-│   │   ├── hippo.png
-│   │   ├── deadHippo.png
-│   │   ├── bee.png
-│   │   ├── gator.png
-│   │   └── lion.png
-│   └── js/
-│       ├── index.js
-│       ├── gameConfig.js
-│       ├── preload.js
-│       ├── create.js
-│       ├── update.js
-│       └── helpers.js
-└── server.js
+│   │
+│   ├── src/
+│   │   ├── create.js
+│   │   ├── deathSequenceScene.js
+│   │   ├── gameConfig.js
+│   │   ├── gameScene.js
+│   │   ├── helpers.js
+│   │   ├── index.js
+│   │   ├── levelIntroScene.js
+│   │   ├── mainMenuScene.js
+│   │   ├── pauseScene.js
+│   │   ├── preload.js
+│   │   ├── script.js
+│   │   └── update.js
+│   │
+│   └── index.html
+│
+└── .gitignore
 
 </pre>
