@@ -1,0 +1,32 @@
+/* css/styles.css */
+@font-face {
+    font-family: 'LuckiestGuy';
+    src: url('../assets/fonts/LuckiestGuy-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: black;
+    color: white;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+canvas {
+    width: 1025px;
+    height: 775px;
+    border: 2px solid white;
+}
+
+#font-loader {
+    position: absolute;
+    left: -1000px;
+    visibility: hidden;
+}
