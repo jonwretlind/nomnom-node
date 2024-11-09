@@ -136,6 +136,12 @@ const Canvas = ({ levelData, setLevelData, selectedTool, onElementSelect }) => {
           width: ENEMY_TYPES[enemy.type.toUpperCase()]?.width,
           height: ENEMY_TYPES[enemy.type.toUpperCase()]?.height
         });
+      } else if (type === 'respawn') {
+        onElementSelect({
+          ...element,
+          type: 'respawn',
+          index
+        });
       } else {
         onElementSelect({ ...element, type, index });
       }

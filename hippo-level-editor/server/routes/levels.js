@@ -61,4 +61,18 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// Get level by level number
+router.get('/number/:levelNumber', async (req, res) => {
+  try {
+    const level = await Level.findOne({ level: parseInt(req.params.levelNumber) });
+    if (level) {
+      res.json(level);
+    } else {
+      res.status(404).json({ message: 'Level not found' });
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router; 

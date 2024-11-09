@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Hippo Noms (Dev Mode)</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+</head>
+<body>
+    <div id="game"></div>
+    <script>
+        window.process = {
+            env: {
+                NODE_ENV: 'development'
+            }
+        };
+    </script>
+    <script type="module" src="/src/game.js"></script>
+</body>
+</html> 

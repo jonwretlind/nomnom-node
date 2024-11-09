@@ -1,14 +1,15 @@
 // index.js
-import GameScene from './gameScene.js';
-import config from './gameConfig.js';
+import './game.js';
 
-window.onload = () => {
-    const game = new Phaser.Game(config);
-    console.log('Game instance created:', game);
-    
-    // Manually start the MainMenuScene after a short delay
-    setTimeout(() => {
-        game.scene.start('MainMenuScene');
-        console.log('MainMenuScene started manually');
-    }, 100);
-};
+// Set up any global configurations or event listeners
+window.addEventListener('load', () => {
+    console.log('Game loaded');
+});
+
+// Handle any errors
+window.addEventListener('error', (e) => {
+    console.error('Game error:', e.error);
+});
+
+// Export any necessary globals
+window.GAME_VERSION = '1.0.0';

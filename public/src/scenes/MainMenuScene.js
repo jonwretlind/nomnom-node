@@ -25,12 +25,52 @@ export default class MainMenuScene extends Phaser.Scene {
         bg.setScale(Math.max(this.cameras.main.width / bg.width, this.cameras.main.height / bg.height));
         console.log('Background image added and scaled:', bg);
 
+        // Fetch first level data before creating buttons
+        fetch('http://localhost:3002/api/levels/number/1', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            mode: 'cors'
+        })
+        .then(response => {
+            console.log('Response from server:', response);
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(levelData => {
+            console.log('Successfully loaded level data:', levelData);
+            // Store level data in registry
+            this.registry.set('currentLevel', levelData);
+            // Create menu buttons
+            this.createButtons();
+        })
+        .catch(error => {
+            console.error('Error loading level data:', error);
+            // Create buttons anyway, but they'll start without level data
+            this.createButtons();
+        });
+    }
+
+    createButtons() {
         // Define button texts and callbacks
         const buttons = [
-            { text: 'Start Game', callback: () => {
-                console.log('Start Game clicked');
-                this.scene.start('LevelIntroScene', { levelNumber: 1 });
-            }},
+            { 
+                text: 'Start Game', 
+                callback: () => {
+                    console.log('Start Game clicked');
+                    const levelData = this.registry.get('currentLevel');
+                    if (levelData) {
+                        console.log('Starting game with level data:', levelData);
+                        this.scene.start('LevelIntroScene', { levelData });
+                    } else {
+                        console.error('No level data available');
+                    }
+                }
+            },
             { text: 'Load Game', callback: () => this.loadGame() },
             { text: 'How to Play', callback: () => this.showHowToPlay() }
         ];
@@ -42,30 +82,34 @@ export default class MainMenuScene extends Phaser.Scene {
                 fontSize: '24px',
                 fill: '#ffffff',
             });
-            const width = tempText.width + 60; // Added extra padding
-            tempText.destroy(); // Remove the temporary text
+            const width = tempText.width + 60;
+            tempText.destroy();
             return width;
         })));
 
         // Create buttons
         buttons.forEach((button, index) => {
-            this.createButton(this.cameras.main.centerX + 275, 300 + index * 75, button.text, button.callback, maxWidth);
+            this.createButton(
+                this.cameras.main.centerX + 275, 
+                300 + index * 75, 
+                button.text, 
+                button.callback, 
+                maxWidth
+            );
         });
     }
 
     createButton(x, y, text, callback, width) {
-        const height = 60; // Fixed height for all buttons
-        const padding = 20; // Padding for text inside the button
+        const height = 60;
+        const padding = 20;
 
-        // Create button background
         const button = this.add.image(x, y, 'button')
             .setDisplaySize(width, height)
             .setInteractive();
 
-        // Create button text with white color and shadow
         const buttonText = this.add.text(x, y, text, { 
             fontFamily: 'LuckiestGuy, Arial, sans-serif',
-            fontSize: '24px', // Reduced font size
+            fontSize: '24px',
             fill: '#ffffff',
             stroke: '#062859',
             strokeThickness: 4,
@@ -85,17 +129,15 @@ export default class MainMenuScene extends Phaser.Scene {
             }
         }).setOrigin(0.5);
 
-        // Center the text vertically
         buttonText.y = y - buttonText.height / 2 + height / 1.9;
 
-        // Set up button interactivity
         button.on('pointerdown', callback);
         button.on('pointerover', () => {
             button.setTint(0xdddddd);
             buttonText.setStyle({ 
-                fill: '#F2EFA3',  // Lighter yellow glow
-                stroke: '#062859',  // Keep the original stroke color
-                shadowColor: '#F2EFA3',  // Lighter yellow shadow
+                fill: '#F2EFA3',
+                stroke: '#062859',
+                shadowColor: '#F2EFA3',
                 shadowBlur: 8,
                 shadowOffsetX: 0,
                 shadowOffsetY: 0
@@ -129,4 +171,4 @@ export default class MainMenuScene extends Phaser.Scene {
     showHowToPlay() {
         console.log('How to play clicked');
     }
-}
+} 

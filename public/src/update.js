@@ -9,49 +9,23 @@ const FLEE_RANGE = 150;
 const WANDER_RADIUS = 200;
 const ENEMY_TURN_SPEED = 0.01;
 
+// Constants for power-up state
+const POWER_UP_DURATION = 10000; // 10 seconds
+
 // Initialize pathfinding grid
 let pfGrid;
 let finder;
 let pathfindingInitialized = false;
 
 export function initializePathfinding(scene) {
-    if (typeof PF === 'undefined') {
-        return false;
+    if (typeof PF !== 'undefined') {
+        scene.pathfindingInitialized = true;
     }
-
-    const gridWidth = Math.ceil(scene.scale.width / 25);
-    const gridHeight = Math.ceil(scene.scale.height / 25);
-    pfGrid = new PF.Grid(gridWidth, gridHeight);
-
-    // Mark walls as obstacles
-    scene.walls.getChildren().forEach(wall => {
-        const gridX = Math.floor(wall.x / 25);
-        const gridY = Math.floor(wall.y / 25);
-        pfGrid.setWalkableAt(gridX, gridY, false);
-    });
-
-    finder = new PF.AStarFinder({
-        allowDiagonal: true,
-        dontCrossCorners: true
-    });
-
-    pathfindingInitialized = true;
-    console.log('Pathfinding initialized successfully');
-    return true;
 }
 
 export function update(time, delta) {
-    if (this.inDeathSequence) {
-        return;  // Don't update anything if we're in the death sequence
-    }
-
     if (this.scene.isPaused() || this.inDeathSequence) {
         return;  // Don't update anything if the scene is paused or we're in the death sequence
-    }
-
-    // Add this check at the beginning of the update function
-    if (this.scene.isPaused()) {
-        return;
     }
 
     if (!pathfindingInitialized) {
@@ -64,36 +38,7 @@ export function update(time, delta) {
         return;
     }
 
-    // Player movement logic
-    if (this.player) {
-        const speed = this.isPoweredUp ? 300 : 200;
-        this.player.setVelocity(0);
-
-        if (this.cursors.left.isDown) {
-            this.player.setVelocityX(-speed);
-            this.player.setFlipX(false);
-        } else if (this.cursors.right.isDown) {
-            this.player.setVelocityX(speed);
-            this.player.setFlipX(true);
-        }
-
-        if (this.cursors.up.isDown) {
-            this.player.setVelocityY(-speed);
-        } else if (this.cursors.down.isDown) {
-            this.player.setVelocityY(speed);
-        }
-
-        // Update player appearance based on power-up state
-        if (this.isPoweredUp) {
-            this.player.setScale(1.5);
-            adjustHueTween(this.player, this.powerUpTimer.getRemaining());
-        } else {
-            this.player.setScale(1);
-            this.player.clearTint();
-        }
-    } else {
-        console.error('Player object is undefined');
-    }
+    // Player movement is now handled in GameScene's update method
 
     // Enemy movement logic
     if (this.enemies && this.enemies.getChildren) {
@@ -103,7 +48,8 @@ export function update(time, delta) {
                     this.player.x, this.player.y, enemy.x, enemy.y
                 );
 
-                if (this.isPoweredUp) {
+                // Check explicit vulnerable state
+                if (this.isPoweredUp && enemy.vulnerable === true) {
                     // Run away from the player
                     steerAwayFrom(enemy, this.player, enemy.speed);
                 } else {
@@ -123,8 +69,6 @@ export function update(time, delta) {
                 }
             }
         });
-    } else {
-        console.error('Enemies object is undefined or does not have getChildren method');
     }
 
     // Use pathfinding if initialized
@@ -138,54 +82,46 @@ export function update(time, delta) {
         console.log('Path found:', path);
     }
 
-    // Update game objects
-    // this.player.update(delta);
-    // this.enemies.forEach(enemy => enemy.update(delta));
+    // Add check at start of update to ensure enemies are in correct state
+    if (this.enemies && this.enemies.getChildren) {
+        this.enemies.getChildren().forEach(enemy => {
+            if (!this.isPoweredUp && enemy.vulnerable) {
+                enemy.vulnerable = false;
+                enemy.clearTint();
+            }
+        });
+    }
 }
 
 export function collectDot(player, dot) {
-    dot.disableBody(true, true);
-    this.score = Number(this.score || 0) + 10;
+    dot.destroy();
+    this.score += 10;
     updateScore(this);
-
-    if (this.energyDots.countActive(true) === 0) {
-        console.log("All dots collected!");
-        // Handle level completion here
-    }
 }
 
-export function collectPowerPill(player, powerPill) {
-    powerPill.disableBody(true, true);
-    this.score = Number(this.score || 0) + 50;
-    updateScore(this);
+export function collectPowerPill(player, pill) {
+    // Only proceed if the scene exists
+    if (!player || !player.scene) return;
+    
+    const scene = player.scene;
+    
+    pill.destroy();
+    scene.score += pill.value || 10;
+    updateScore(scene);
+}
 
-    // Activate power-up state
-    this.isPoweredUp = true;
-
-    // Make enemies vulnerable, blink more slowly, fade more, and add a blue tint
-    this.enemies.getChildren().forEach(enemy => {
-        enemy.vulnerable = true;
-        enemy.setTint(0x8080FF);  // Slight blue tint
-        this.tweens.add({
-            targets: enemy,
-            alpha: 0.4, // More fading
-            yoyo: true,
-            repeat: -1,
-            duration: 250, // Slower blinking
-            ease: 'Linear'
-        });
-    });
-
-    // Reset power-up state after 10 seconds
-    if (this.powerUpTimer) {
-        this.powerUpTimer.remove();
+export function hitEnemy(player, enemy) {
+    if (!player || !player.scene) return;
+    
+    const scene = player.scene;
+    
+    // Only eat enemy if powered up AND enemy is vulnerable
+    if (scene.isPoweredUp && enemy.vulnerable === true) {
+        eatEnemy(scene, enemy);
+    } else if (!player.isInvincible && !scene.inDeathSequence) {
+        loseLife(scene);
+        scene.handlePlayerDeath();
     }
-    this.powerUpTimer = this.time.delayedCall(10000, () => {
-        endPowerUp(this);
-    }, [], this);
-
-    // Start the color transition for the player
-    startPlayerColorTransition(this, player);
 }
 
 function adjustHueTween(player, duration) {
@@ -207,19 +143,64 @@ function adjustHueTween(player, duration) {
     });
 }
 
-function endPowerUp(scene) {
-    scene.isPoweredUp = false;
-    scene.player.setScale(1);
-    scene.player.clearTint();
-    scene.tweens.killTweensOf(scene.player);
-    scene.player.setAlpha(1);
+export function handlePowerUp(player, powerUp) {
+    const duration = powerUp.duration || 10000; // Default 10 seconds
 
-    scene.enemies.getChildren().forEach((enemy) => {
-        scene.tweens.killTweensOf(enemy);
-        enemy.setAlpha(1);
-        enemy.clearTint();
-        enemy.vulnerable = false;
-    });
+    if (powerUp.type === 'speed') {
+        // Speed boost effect
+        this.tweens.add({
+            targets: player,
+            scale: 1.2,
+            duration: 200,
+            yoyo: true,
+            repeat: 2
+        });
+    } else if (powerUp.type === 'invincibility') {
+        // Make player invincible and enemies vulnerable
+        this.isPoweredUp = true;
+        player.isInvincible = true;
+        
+        // Make enemies vulnerable
+        this.enemies.getChildren().forEach(enemy => {
+            if (enemy) {
+                enemy.vulnerable = true;
+                enemy.setTint(0x4444ff);
+            }
+        });
+
+        // Invincibility effect
+        this.tweens.add({
+            targets: player,
+            alpha: 0.7,
+            duration: 200,
+            yoyo: true,
+            repeat: -1
+        });
+    }
+
+    // Remove the power-up
+    powerUp.destroy();
+
+    // Set timer to end power-up
+    if (this.powerUpTimer) {
+        this.powerUpTimer.remove();
+    }
+
+    this.powerUpTimer = this.time.delayedCall(duration, () => {
+        this.isPoweredUp = false;
+        player.isInvincible = false;
+        player.setScale(1);
+        player.setAlpha(1);
+        this.tweens.killTweensOf(player);
+
+        // Reset enemy vulnerability
+        this.enemies.getChildren().forEach(enemy => {
+            if (enemy) {
+                enemy.vulnerable = false;
+                enemy.clearTint();
+            }
+        });
+    }, null, this);
 }
 
 function steerTowards(enemy, target, speed) {
@@ -254,102 +235,6 @@ function wander(enemy) {
     enemy.body.velocity.y = lerpedVelocity.y;
 }
 
-export function hitEnemy(player, enemy) {
-    if (this.isPoweredUp) {
-        // Player eats the enemy
-        enemy.disableBody(true, true);
-        
-        // Determine points based on enemy type
-        let points = 0;
-        switch (enemy.texture.key) {
-            case 'gator':
-                points = 200;
-                break;
-            case 'lion':
-                points = 250;
-                break;
-            case 'bee':
-                points = 300;
-                break;
-            default:
-                points = 100;
-        }
-
-        // Add points to score
-        this.score = Number(this.score || 0) + points;
-        updateScore(this);
-
-        // Display floating points
-        showFloatingPoints(this, enemy.x, enemy.y, points);
-
-        // Play disintegration effect
-        playDisintegrationEffect(this, enemy);
-
-        // Respawn the enemy after a delay
-        this.time.delayedCall(10000, () => {
-            respawnEnemy(this, enemy.texture.key, enemy.speed);
-        });
-    } else if (!enemy.vulnerable && !this.inDeathSequence) {
-        this.inDeathSequence = true;
-        loseLife(this);
-
-        if (this.lives <= 0) {
-            this.physics.pause();
-            player.setTint(0xff0000);
-            player.anims.play('death');
-            this.gameOver = true;
-            
-            // Dim the screen for Game Over
-            const dimOverlay = this.add.rectangle(0, 0, this.sys.game.config.width, this.sys.game.config.height, 0x000000, 0.7);
-            dimOverlay.setOrigin(0, 0);
-            dimOverlay.setDepth(998);
-
-            // Display Game Over text
-            const gameOverText = this.add.text(this.sys.game.config.width / 2, this.sys.game.config.height / 2, 'Game Over', {
-                fontSize: '48px',
-                fill: '#ffffff'
-            }).setOrigin(0.5);
-            gameOverText.setDepth(999);
-        } else {
-            // Store current enemy positions
-            const enemyData = this.enemies.getChildren().map(e => ({
-                enemy: e,
-                x: e.startX,
-                y: e.startY
-            }));
-
-            // Pause physics
-            this.physics.pause();
-
-            // Launch the DeathSequenceScene
-            this.scene.launch('DeathSequenceScene', { lives: this.lives });
-
-            // Listen for the death sequence to complete
-            this.scene.get('DeathSequenceScene').events.once('deathSequenceComplete', () => {
-                // Reset player position and velocity
-                player.setPosition(120, 120);
-                player.setVelocity(0, 0);
-                player.body.reset(120, 120);
-
-                // Reset enemy positions
-                enemyData.forEach(data => {
-                    if (data.enemy && data.enemy.body) {
-                        data.enemy.setPosition(data.x, data.y);
-                        data.enemy.body.reset(data.x, data.y);
-                    }
-                });
-
-                // Clear the red tint and resume the game
-                player.clearTint();
-                player.anims.play('move');
-                this.physics.resume();
-                this.inDeathSequence = false;
-                updateLivesDisplay(this);
-            });
-        }
-    }
-}
-
 function playDisintegrationEffect(scene, enemy) {
     const emitter = scene.particles.createEmitter({
         x: enemy.x,
@@ -368,41 +253,16 @@ function playDisintegrationEffect(scene, enemy) {
     });
 }
 
-function respawnEnemy(scene, type, speed) {
-    const enemyData = {
-        'bee': { width: 35, height: 30 },
-        'gator': { width: 80, height: 72 },
-        'lion': { width: 62, height: 72 }
-    };
-
-    const { width, height } = enemyData[type] || { width: 72, height: 72 };  // Default size if type is unknown
-
-    const centerX = scene.scale.width / 2;
-    const centerY = scene.scale.height / 2;
-
-    const enemy = scene.enemies.create(
-        centerX + Phaser.Math.Between(-100, 100),
-        centerY + Phaser.Math.Between(-100, 100),
-        type
-    );
-
-    enemy.setCollideWorldBounds(true)
-        .setDisplaySize(width, height)
-        .setVelocity(
-            Phaser.Math.Between(-speed, speed),
-            Phaser.Math.Between(-speed, speed)
-        )
-        .setBounce(1)
-        .setDepth(1);
-
-    enemy.speed = speed;
-
-    // Set the collision body size
-    enemy.body.setSize(width * 0.8, height * 0.8);
-    enemy.body.setOffset(width * 0.1, height * 0.1);
-
-    // Play the correct animation
-    enemy.play(`${type}-move`);
+function respawnEnemy(scene, enemy) {
+    enemy.setPosition(enemy.startX, enemy.startY);
+    enemy.setVisible(true);
+    enemy.body.enable = true;
+    enemy.clearTint();
+    enemy.vulnerable = false;  // Ensure enemy is not vulnerable when respawning
+    
+    // Reset velocity
+    enemy.body.velocity.x = Phaser.Math.Between(-enemy.speed, enemy.speed);
+    enemy.body.velocity.y = Phaser.Math.Between(-enemy.speed, enemy.speed);
 }
 
 function startPlayerColorTransition(scene, player) {
@@ -482,6 +342,42 @@ function showFloatingPoints(scene, x, y, points) {
         onComplete: () => {
             pointsText.destroy();
         }
+    });
+}
+
+function eatEnemy(scene, enemy) {
+    // Only proceed if enemy is actually vulnerable
+    if (!enemy.vulnerable) return;
+
+    // Create particle effect
+    const particles = scene.add.particles('particle');
+    const emitter = particles.createEmitter({
+        x: enemy.x,
+        y: enemy.y,
+        speed: { min: 50, max: 100 },
+        angle: { min: 0, max: 360 },
+        scale: { start: 0.5, end: 0 },
+        lifespan: 1000,
+        quantity: 20,
+        blendMode: 'ADD'
+    });
+
+    // Add score
+    scene.score += 200;
+    updateScore(scene);
+
+    // Hide enemy
+    enemy.setVisible(false);
+    enemy.body.enable = false;
+
+    // Schedule enemy respawn
+    scene.time.delayedCall(5000, () => {
+        respawnEnemy(scene, enemy);
+    });
+
+    // Stop particle effect after animation
+    scene.time.delayedCall(1000, () => {
+        particles.destroy();
     });
 }
 

@@ -38,5 +38,9 @@ export function preload() {
   // Load the particle texture
   this.load.image('particle', '/assets/particle.png');  // Updated path
 
+  // Load power up sprites
+  this.load.image('powerup_speed', 'assets/powerup_speed.png');
+  this.load.image('powerup_invincibility', 'assets/powerup_invincibility.png');
+
       
 }

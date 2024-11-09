@@ -66,20 +66,11 @@ export function saveOriginalState(scene) {
     }));
 }
 
-// Clear all game objects between levels
-export function clearGameObjects(scene) {
-    console.log('Clearing game objects...');
-    scene.walls.clear(true, true);
-    scene.energyDots.clear(true, true);
-    scene.powerPills.clear(true, true);
-    scene.enemies.clear(true, true);
-}
-
 // Load the current level from the levels array
 export async function loadCurrentLevel(scene) {
     console.log(`Loading current level with index: ${scene.currentLevelIndex}`);
 
-    const levels = await ensureLevelsLoaded();  // Ensure levels are loaded
+    const levels = await ensureLevelsLoaded();
 
     if (!levels || levels.length === 0) {
         console.error('Levels data is empty or undefined.');
@@ -91,7 +82,7 @@ export async function loadCurrentLevel(scene) {
         return;
     }
 
-    const level = levels[scene.currentLevelIndex];  // Get the current level
+    const level = levels[scene.currentLevelIndex];
 
     if (!level || typeof level !== 'object' || !Array.isArray(level.maze) || level.maze.length === 0) {
         console.error('Level or maze data is missing or invalid:', level);
@@ -100,18 +91,22 @@ export async function loadCurrentLevel(scene) {
 
     console.log(`Loading level ${scene.currentLevelIndex + 1}:`, level);
 
-    clearGameObjects(scene);  // Clear previous level objects
+    // Clear only non-enemy objects
+    clearWalls(scene);
+    clearDots(scene);
+    clearPowerPills(scene);
+    clearPowerUps(scene);
 
     // Create walls from the maze data
     level.maze.forEach(([x, y, width, height]) => {
         createWall(scene, x, y, width, height);
     });
 
-    scene.ppSpacing = level.ppSpacing || 15;  // Default spacing for power pills
-    scene.currentLevel = level;  // Store the entire level data in the scene
+    scene.ppSpacing = level.ppSpacing || 15;
+    scene.currentLevel = level;
 
     console.log(`Level ${scene.currentLevelIndex + 1} loaded successfully.`);
-    console.log('Enemy data:', level.enemies);  // Log enemy data for debugging
+    console.log('Enemy data:', level.enemies);
 }
 
 // Create walls from the maze data
@@ -162,8 +157,8 @@ export function loseLife(scene) {
     updateLivesDisplay(scene);
 
     if (scene.lives > 0) {
-        // Pause the game briefly and reset player/enemy positions
-        pauseGameWithBlink(scene);
+        // Don't clear game objects or pause physics - that's handled in GameScene
+        return;
     } else {
         endGame(scene);
     }
@@ -196,6 +191,8 @@ export function createLivesDisplay(scene) {
 export function endGame(scene) {
     scene.gameOver = true;
     scene.physics.pause();
+    
+    // Pause animations instead of destroying objects
     scene.player.anims.pause();
     scene.enemies.getChildren().forEach(enemy => enemy.anims.pause());
 
@@ -467,5 +464,22 @@ function respawnEnemy(scene, type, speed) {
 
     // Play the correct animation
     enemy.play(`${type}-move`);
+}
+
+// Add these new clear functions for specific object types
+function clearWalls(scene) {
+    if (scene.walls) scene.walls.clear(true, true);
+}
+
+function clearDots(scene) {
+    if (scene.energyDots) scene.energyDots.clear(true, true);
+}
+
+function clearPowerPills(scene) {
+    if (scene.powerPills) scene.powerPills.clear(true, true);
+}
+
+function clearPowerUps(scene) {
+    if (scene.powerUps) scene.powerUps.clear(true, true);
 }
 
