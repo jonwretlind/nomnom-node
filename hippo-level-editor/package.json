@@ -1,0 +1,57 @@
+{
+  "name": "hippo-level-editor",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.x.x",
+    "@emotion/styled": "^11.x.x",
+    "@mui/icons-material": "^5.13.0",
+    "@mui/material": "^5.x.x",
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "express-async-handler": "^1.2.0",
+    "konva": "^9.0.0",
+    "mongoose": "^8.8.1",
+    "react": "^18.x.x",
+    "react-dom": "^18.x.x",
+    "react-konva": "^18.2.8",
+    "react-scripts": "5.x.x"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "kill-port": "^2.0.1",
+    "nodemon": "^3.0.1",
+    "webpack": "^5.x.x",
+    "webpack-cli": "^5.x.x"
+  },
+  "scripts": {
+    "start": "nodemon --config nodemon.json --exec \"npm run start:dev\"",
+    "start:dev": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start:frontend": "BROWSER=none PORT=3001 FAST_REFRESH=true react-scripts start",
+    "start:backend": "node server/index.js",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "seed": "node server/scripts/seedDatabase.js"
+  },
+  "proxy": "http://localhost:3002",
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

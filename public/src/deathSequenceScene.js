@@ -31,22 +31,36 @@ export default class DeathSequenceScene extends Phaser.Scene {
                 fill: '#ffffff'
             }).setOrigin(0.5);
 
-            // Wait for 2 seconds, then show "Ready?" text
+            // Wait for 2 seconds, then start countdown
             this.time.delayedCall(2000, () => {
                 this.ouchText.destroy();
-                this.readyText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Ready?', {
-                    fontFamily: 'LuckiestGuy, Arial, sans-serif',
-                    fontSize: '64px',
-                    fill: '#ffffff'
-                }).setOrigin(0.5);
+                this.startCountdown();
+            });
+        });
+    }
 
-                // Wait for 3 more seconds, then resume the game
-                this.time.delayedCall(3000, () => {
+    startCountdown() {
+        let count = 5;
+        const countdownText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, count.toString(), {
+            fontFamily: 'LuckiestGuy, Arial, sans-serif',
+            fontSize: '64px',
+            fill: '#ffffff'
+        }).setOrigin(0.5);
+
+        const countdownInterval = this.time.addEvent({
+            delay: 1000,
+            callback: () => {
+                count--;
+                countdownText.setText(count.toString());
+                if (count <= 0) {
+                    countdownInterval.remove();
+                    countdownText.destroy();
                     this.scene.resume('GameScene');
                     this.events.emit('deathSequenceComplete');
                     this.scene.stop();
-                });
-            });
+                }
+            },
+            repeat: 4
         });
     }
 }
