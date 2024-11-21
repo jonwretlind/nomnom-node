@@ -330,38 +330,62 @@ export let score = 0;
 
 // Function to handle collision with an enemy
 export function hitEnemy(player, enemy) {
+    console.log('Collision detected!', {
+        isPoweredUp: player.scene.isPoweredUp,
+        isEnemyVulnerable: enemy.isVulnerable
+    });
+
+    // First check if player is powered up
     if (player.scene.isPoweredUp) {
-        let points = 0;
-        switch (enemy.texture.key) {
-            case 'gator':
-                points = 200;
-                break;
-            case 'lion':
-                points = 250;
-                break;
-            case 'bee':
-                points = 300;
-                break;
-            default:
-                points = 100;
+        console.log('Player is powered up!');
+        
+        // Then check if enemy is vulnerable
+        if (enemy.isVulnerable) {
+            console.log('Enemy is vulnerable! Eating enemy...');
+            
+            let points = 0;
+            switch (enemy.texture.key) {
+                case 'gator':
+                    points = 200;
+                    break;
+                case 'lion':
+                    points = 250;
+                    break;
+                case 'bee':
+                    points = 300;
+                    break;
+                default:
+                    points = 100;
+            }
+
+            // Update score and show effects
+            player.scene.score += points;
+            updateScore(player.scene);
+            showFloatingPoints(player.scene, enemy.x, enemy.y, points);
+            playDisintegrationEffect(player.scene, enemy);
+
+            // Store enemy info before destroying
+            const enemyType = enemy.texture.key;
+            const enemySpeed = enemy.previousSpeed || enemy.speed;
+            
+            // Destroy the enemy immediately
+            enemy.destroy();
+
+            // Schedule respawn
+            player.scene.time.delayedCall(10000, () => {
+                respawnEnemy(player.scene, enemyType, enemySpeed);
+            }, [], player.scene);
+            
+            return; // Exit the function after eating the enemy
         }
-
-        updateScore(player.scene, points);
-
-        // Show floating points at the position of the enemy
-        showFloatingPoints(player.scene, enemy.x, enemy.y, points);
-
-        // Play disintegration effect before destroying the enemy
-        playDisintegrationEffect(player.scene, enemy);
-
-        const enemyType = enemy.texture.key;
-        const enemySpeed = enemy.speed;
-        enemy.destroy();
-
-        player.scene.time.delayedCall(10000, () => respawnEnemy(player.scene, enemyType, enemySpeed), [], player.scene);
-    } else {
-        loseLife(player.scene);
     }
+    
+    // If we get here, either player is not powered up or enemy is not vulnerable
+    console.log('Player lost a life!', {
+        isPoweredUp: player.scene.isPoweredUp,
+        isEnemyVulnerable: enemy.isVulnerable
+    });
+    loseLife(player.scene);
 }
 
 // Function to show floating points
@@ -436,7 +460,7 @@ function respawnEnemy(scene, type, speed) {
         'lion': { width: 62, height: 72 }
     };
 
-    const { width, height } = enemyData[type] || { width: 72, height: 72 };  // Default size if type is unknown
+    const { width, height } = enemyData[type] || { width: 72, height: 72 };
 
     const centerX = scene.scale.width / 2;
     const centerY = scene.scale.height / 2;
@@ -446,6 +470,9 @@ function respawnEnemy(scene, type, speed) {
         centerY + Phaser.Math.Between(-100, 100),
         type
     );
+
+    // Enable physics on the enemy
+    scene.physics.world.enable(enemy);
 
     enemy.setCollideWorldBounds(true)
         .setDisplaySize(width, height)
@@ -461,9 +488,16 @@ function respawnEnemy(scene, type, speed) {
     // Set the collision body size
     enemy.body.setSize(width * 0.8, height * 0.8);
     enemy.body.setOffset(width * 0.1, height * 0.1);
+    enemy.body.enable = true;
 
     // Play the correct animation
     enemy.play(`${type}-move`);
+
+    enemy.isVulnerable = false;
+    enemy.clearTint();
+
+    // Ensure collision is properly set up
+    setupEnemyPhysics(scene);
 }
 
 // Add these new clear functions for specific object types
@@ -481,5 +515,84 @@ function clearPowerPills(scene) {
 
 function clearPowerUps(scene) {
     if (scene.powerUps) scene.powerUps.clear(true, true);
+}
+
+// Function to make enemies vulnerable
+export function makeEnemiesVulnerable(scene) {
+    console.log('Making enemies vulnerable...');
+    
+    scene.enemies.getChildren().forEach(enemy => {
+        enemy.previousSpeed = enemy.speed;
+        enemy.isVulnerable = true;
+        
+        // Create flickering effect for vulnerable enemies
+        scene.tweens.add({
+            targets: enemy,
+            alpha: 0,
+            yoyo: true,
+            repeat: -1,
+            duration: 200
+        });
+        
+        // Reduce speed
+        const currentVelocity = enemy.body.velocity;
+        enemy.speed *= 0.5;
+        enemy.setVelocity(
+            currentVelocity.x * 0.5,
+            currentVelocity.y * 0.5
+        );
+    });
+}
+
+// Function to return enemies to normal state
+export function makeEnemiesNormal(scene) {
+    console.log('Returning enemies to normal state...');
+    
+    scene.enemies.getChildren().forEach(enemy => {
+        // Stop the flickering tween
+        scene.tweens.killTweensOf(enemy);
+        enemy.setAlpha(1);
+        
+        enemy.isVulnerable = false;
+        
+        if (enemy.previousSpeed) {
+            enemy.speed = enemy.previousSpeed;
+            const velocity = enemy.body.velocity;
+            if (velocity.x !== 0 || velocity.y !== 0) {
+                const magnitude = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+                const direction = {
+                    x: velocity.x / magnitude,
+                    y: velocity.y / magnitude
+                };
+                enemy.setVelocity(
+                    direction.x * enemy.previousSpeed,
+                    direction.y * enemy.previousSpeed
+                );
+            }
+            delete enemy.previousSpeed;
+        }
+    });
+}
+
+// Add this new function to set up enemy physics
+export function setupEnemyPhysics(scene) {
+    // Set up collision between player and enemies
+    if (scene.player && scene.enemies) {
+        // Remove any existing colliders first to prevent duplicates
+        if (scene.enemyCollider) {
+            scene.enemyCollider.destroy();
+        }
+        
+        // Create new collider
+        scene.enemyCollider = scene.physics.add.collider(
+            scene.player, 
+            scene.enemies, 
+            hitEnemy, 
+            null, 
+            scene
+        );
+    } else {
+        console.warn('Player or enemies not initialized when setting up physics');
+    }
 }
 

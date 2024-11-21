@@ -1,6 +1,6 @@
 import { createEnemies, createAnimations } from '../create.js';
 import { collectDot, collectPowerPill, hitEnemy, initializePathfinding, update as updateGameState } from '../update.js';
-import { createUI, updateScore, loseLife, updateLivesDisplay } from '../helpers.js';
+import { createUI, updateScore, loseLife, updateLivesDisplay, setupEnemyPhysics, makeEnemiesVulnerable, makeEnemiesNormal, showFloatingPoints } from '../helpers.js';
 
 export class GameScene extends Phaser.Scene {
     constructor() {
@@ -181,6 +181,9 @@ export class GameScene extends Phaser.Scene {
 
         // Set the player's depth
         this.player.setDepth(10);
+
+        // Set up initial physics
+        setupEnemyPhysics(this);
     }
 
     async initializeLevel(levelData) {
@@ -514,13 +517,22 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    // Update handlePowerUp for speed and invincibility power-ups only (not power pills)
+    // Update handlePowerUp method
     handlePowerUp(player, powerUp) {
         console.log('handlePowerUp called with type:', powerUp.type);
         const duration = powerUp.duration || 10000; // Default 10 seconds
 
         if (powerUp.type === 'speed') {
-            // Speed boost effect
+            // Set speed boost state
+            this.isSpeedBoosted = true;
+            
+            // Award points for speed power-up
+            const points = 100;  // Points for speed power-up
+            this.score += points;
+            updateScore(this);
+            showFloatingPoints(this, powerUp.x, powerUp.y, points);
+            
+            // Visual effect for speed boost
             this.tweens.add({
                 targets: player,
                 scale: 1.2,
@@ -528,28 +540,105 @@ export class GameScene extends Phaser.Scene {
                 yoyo: true,
                 repeat: 2
             });
-        } else if (powerUp.type === 'invincibility') {
-            player.isInvincible = true;
-            // Invincibility effect
-            this.tweens.add({
-                targets: player,
-                alpha: 0.7,
-                duration: 200,
-                yoyo: true,
-                repeat: -1
+
+            // Start blinking the player during the last 2 seconds
+            const warningTimer = this.time.delayedCall(duration - 2000, () => {
+                this.playerWarningTween = this.tweens.add({
+                    targets: player,
+                    alpha: 0,
+                    yoyo: true,
+                    repeat: -1,
+                    duration: 200
+                });
             });
+
+            // Set timer to end speed boost
+            this.powerUpTimer = this.time.delayedCall(duration, () => {
+                this.isSpeedBoosted = false;
+                
+                // Stop warning blink if it exists
+                if (this.playerWarningTween) {
+                    this.playerWarningTween.stop();
+                    this.playerWarningTween = null;
+                    player.setAlpha(1);
+                }
+            }, null, this);
+
+        } else if (powerUp.type === 'invincibility') {
+            // Award points for invincibility power-up
+            const points = 100;  // Points for invincibility power-up
+            this.score += points;
+            updateScore(this);
+            showFloatingPoints(this, powerUp.x, powerUp.y, points);
+            
+            // Set powered up state
+            this.isPoweredUp = true;
+            player.isInvincible = true;
+            
+            // Make player bigger
+            player.setScale(1.5);
+            
+            // Start the hue shift from red to blue
+            this.tweens.addCounter({
+                from: 0,
+                to: 100,
+                duration: duration,
+                onUpdate: (tween) => {
+                    const value = tween.getValue();
+                    const red = Phaser.Display.Color.Interpolate.ColorWithColor(
+                        { r: 0, g: 224, b: 224 },
+                        { r: 255, g: 255, b: 255 },
+                        100,
+                        value
+                    );
+                    const color = Phaser.Display.Color.GetColor(red.r, red.g, red.b);
+                    player.setTint(color);
+                }
+            });
+            
+            // Make enemies vulnerable
+            makeEnemiesVulnerable(this);
+
+            // Start blinking the player during the last 2 seconds
+            const warningTimer = this.time.delayedCall(duration - 2000, () => {
+                this.playerWarningTween = this.tweens.add({
+                    targets: player,
+                    alpha: 0,
+                    yoyo: true,
+                    repeat: -1,
+                    duration: 200
+                });
+            });
+
+            // Set timer to end power-up
+            this.powerUpTimer = this.time.delayedCall(duration, () => {
+                // Stop and cleanup all tweens on the player
+                this.tweens.killTweensOf(player);
+                
+                // Reset all player states
+                this.isPoweredUp = false;
+                player.isInvincible = false;
+                player.setScale(1);
+                player.clearTint();
+                player.setAlpha(1);
+                
+                // Clear the warning timer if it hasn't triggered yet
+                if (warningTimer && warningTimer.getProgress() < 1) {
+                    warningTimer.remove();
+                }
+                
+                // Clear the warning tween if it exists
+                if (this.playerWarningTween) {
+                    this.playerWarningTween.stop();
+                    this.playerWarningTween = null;
+                }
+                
+                makeEnemiesNormal(this);
+            }, null, this);
         }
 
-        // Remove the power-up
+        // Remove the power-up sprite (moved outside the if-else)
         powerUp.destroy();
-
-        // Set timer to end power-up
-        this.powerUpTimer = this.time.delayedCall(duration, () => {
-            player.isInvincible = false;
-            player.setScale(1);
-            player.setAlpha(1);
-            this.tweens.killTweensOf(player);
-        }, null, this);
     }
 
     // Add this method to track enemy destruction
@@ -563,14 +652,10 @@ export class GameScene extends Phaser.Scene {
             return;
         }
 
-        // Add debug check at start of each update
-        if (this.isPoweredUp) {
-            console.log('Power-up state is true in update');
-        }
-
         // Handle basic player movement
         if (this.player && this.cursors) {
-            const speed = this.isPoweredUp ? 300 : 200;
+            // Base speed is 200, boosted speed is 300 (1.5x faster)
+            const speed = this.isSpeedBoosted ? 300 : 200;
             this.player.setVelocity(0);
 
             if (this.cursors.left.isDown) {
