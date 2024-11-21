@@ -1,0 +1,601 @@
+[{
+  "_id": {
+    "$oid": "673e83cdea510cb07e93477e"
+  },
+  "level": 1,
+  "name": "Zoo Escape 1",
+  "ppSpacing": 15,
+  "terrain": [
+    {
+      "type": "water",
+      "x": 500,
+      "y": 600,
+      "width": 325,
+      "height": 100,
+      "properties": {
+        "flowDirection": "right",
+        "flowSpeed": 100,
+        "playerSpeedMultiplier": 1.5
+      },
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934965"
+      }
+    }
+  ],
+  "maze": [
+    [
+      25,
+      50,
+      950,
+      25
+    ],
+    [
+      25,
+      75,
+      25,
+      650
+    ],
+    [
+      50,
+      700,
+      775,
+      25
+    ],
+    [
+      950,
+      75,
+      25,
+      650
+    ],
+    [
+      200,
+      575,
+      475,
+      25
+    ],
+    [
+      175,
+      175,
+      25,
+      425
+    ],
+    [
+      300,
+      175,
+      525,
+      25
+    ],
+    [
+      800,
+      200,
+      25,
+      400
+    ],
+    [
+      300,
+      450,
+      375,
+      25
+    ],
+    [
+      300,
+      200,
+      25,
+      250
+    ],
+    [
+      425,
+      300,
+      250,
+      25
+    ],
+    [
+      650,
+      325,
+      25,
+      125
+    ]
+  ],
+  "powerUps": [
+    {
+      "type": "invincibility",
+      "x": 250,
+      "y": 425,
+      "duration": 5000,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934966"
+      }
+    },
+    {
+      "type": "powerUp",
+      "x": 900,
+      "y": 350,
+      "duration": 5000,
+      "multiplier": 1.5,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934967"
+      }
+    },
+    {
+      "type": "invincibility",
+      "x": 750,
+      "y": 275,
+      "duration": 5000,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934968"
+      }
+    },
+    {
+      "type": "invincibility",
+      "x": 500,
+      "y": 125,
+      "duration": 5000,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934969"
+      }
+    },
+    {
+      "type": "powerUp",
+      "x": 500,
+      "y": 125,
+      "duration": 5000,
+      "multiplier": 1.5,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93496a"
+      }
+    },
+    {
+      "type": "invincibility",
+      "x": 300,
+      "y": 650,
+      "duration": 5000,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93496b"
+      }
+    }
+  ],
+  "enemies": [
+    {
+      "type": "bee",
+      "x": 100,
+      "y": 600,
+      "speed": 90,
+      "width": 35,
+      "height": 30,
+      "properties": {
+        "canCrossWater": true,
+        "flightHeight": 2,
+        "attackPattern": "zigzag"
+      },
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93496c"
+      }
+    },
+    {
+      "type": "bee",
+      "x": 900,
+      "y": 275,
+      "speed": 90,
+      "width": 35,
+      "height": 30,
+      "properties": {
+        "canCrossWater": true,
+        "flightHeight": 2,
+        "attackPattern": "zigzag"
+      },
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93496d"
+      }
+    },
+    {
+      "type": "bee",
+      "x": 500,
+      "y": 525,
+      "speed": 90,
+      "width": 35,
+      "height": 30,
+      "properties": {
+        "canCrossWater": true,
+        "flightHeight": 2,
+        "attackPattern": "zigzag"
+      },
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93496e"
+      }
+    },
+    {
+      "type": "lion",
+      "x": 350,
+      "y": 375,
+      "speed": 90,
+      "width": 62,
+      "height": 72,
+      "properties": {
+        "canCrossWater": false,
+        "roarRadius": 200,
+        "stunDuration": 1000
+      },
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93496f"
+      }
+    },
+    {
+      "type": "lion",
+      "x": 825,
+      "y": 90,
+      "speed": 90,
+      "width": 62,
+      "height": 72,
+      "properties": {
+        "canCrossWater": false,
+        "roarRadius": 200,
+        "stunDuration": 1000
+      },
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934970"
+      }
+    },
+    {
+      "type": "gator",
+      "x": 510,
+      "y": 615,
+      "speed": 90,
+      "width": 80,
+      "height": 72,
+      "properties": {
+        "canCrossWater": true,
+        "waterSpeedBonus": 2,
+        "landSpeedPenalty": 0.5
+      },
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934971"
+      }
+    },
+    {
+      "type": "gator",
+      "x": 705,
+      "y": 460,
+      "speed": 90,
+      "width": 80,
+      "height": 72,
+      "properties": {
+        "canCrossWater": true,
+        "waterSpeedBonus": 2,
+        "landSpeedPenalty": 0.5
+      },
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934972"
+      }
+    }
+  ],
+  "exit": {
+    "x": 825,
+    "y": 700,
+    "width": 124,
+    "height": 24
+  },
+  "powerPills": [
+    {
+      "x": 100,
+      "y": 450,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934973"
+      }
+    },
+    {
+      "x": 100,
+      "y": 550,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934974"
+      }
+    },
+    {
+      "x": 100,
+      "y": 650,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934975"
+      }
+    },
+    {
+      "x": 200,
+      "y": 650,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934976"
+      }
+    },
+    {
+      "x": 400,
+      "y": 650,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934977"
+      }
+    },
+    {
+      "x": 500,
+      "y": 650,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934978"
+      }
+    },
+    {
+      "x": 600,
+      "y": 650,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934979"
+      }
+    },
+    {
+      "x": 700,
+      "y": 650,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93497a"
+      }
+    },
+    {
+      "x": 800,
+      "y": 650,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93497b"
+      }
+    },
+    {
+      "x": 900,
+      "y": 450,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93497c"
+      }
+    },
+    {
+      "x": 900,
+      "y": 550,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93497d"
+      }
+    },
+    {
+      "x": 900,
+      "y": 650,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93497e"
+      }
+    },
+    {
+      "x": 900,
+      "y": 225,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93497f"
+      }
+    },
+    {
+      "x": 900,
+      "y": 125,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934980"
+      }
+    },
+    {
+      "x": 200,
+      "y": 125,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934981"
+      }
+    },
+    {
+      "x": 800,
+      "y": 125,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934982"
+      }
+    },
+    {
+      "x": 700,
+      "y": 125,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934983"
+      }
+    },
+    {
+      "x": 600,
+      "y": 125,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934984"
+      }
+    },
+    {
+      "x": 400,
+      "y": 125,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934985"
+      }
+    },
+    {
+      "x": 300,
+      "y": 125,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934986"
+      }
+    },
+    {
+      "x": 250,
+      "y": 225,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934987"
+      }
+    },
+    {
+      "x": 250,
+      "y": 325,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934988"
+      }
+    },
+    {
+      "x": 250,
+      "y": 525,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934989"
+      }
+    },
+    {
+      "x": 350,
+      "y": 525,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93498a"
+      }
+    },
+    {
+      "x": 450,
+      "y": 525,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93498b"
+      }
+    },
+    {
+      "x": 550,
+      "y": 525,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93498c"
+      }
+    },
+    {
+      "x": 650,
+      "y": 525,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93498d"
+      }
+    },
+    {
+      "x": 750,
+      "y": 525,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93498e"
+      }
+    },
+    {
+      "x": 750,
+      "y": 425,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93498f"
+      }
+    },
+    {
+      "x": 750,
+      "y": 350,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934990"
+      }
+    },
+    {
+      "x": 675,
+      "y": 250,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934991"
+      }
+    },
+    {
+      "x": 575,
+      "y": 250,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934992"
+      }
+    },
+    {
+      "x": 475,
+      "y": 250,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934993"
+      }
+    },
+    {
+      "x": 375,
+      "y": 250,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934994"
+      }
+    },
+    {
+      "x": 375,
+      "y": 350,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934995"
+      }
+    },
+    {
+      "x": 450,
+      "y": 400,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934996"
+      }
+    },
+    {
+      "x": 550,
+      "y": 400,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934997"
+      }
+    },
+    {
+      "x": 100,
+      "y": 350,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934998"
+      }
+    },
+    {
+      "x": 100,
+      "y": 250,
+      "value": 10,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e934999"
+      }
+    }
+  ],
+  "respawnPoints": [
+    {
+      "x": 500,
+      "y": 375,
+      "_id": {
+        "$oid": "673e86b1ea510cb07e93499a"
+      }
+    }
+  ],
+  "__v": 0
+}]
